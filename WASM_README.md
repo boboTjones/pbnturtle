@@ -4,12 +4,12 @@ A fully client-side paint-by-numbers generator that runs entirely in your browse
 
 ## Features
 
-- 🚀 **100% Client-Side** - No server required, all processing happens in your browser
-- 🎨 **Real-Time Sliders** - Adjust points, colors, and line width with instant preview
-- ⚡ **WebAssembly Performance** - Near-native speed using compiled Go code
-- 📱 **Drag & Drop** - Easy image upload
-- 🎯 **Auto-Update Mode** - Toggle automatic processing on slider change
-- 💾 **Download Results** - Save your paint-by-numbers as PNG
+- **100% Client-Side** - No server required, all processing happens in your browser
+- **Real-Time Sliders** - Adjust points, colors, and line width with instant preview
+- **WebAssembly Performance** - Near-native speed using compiled Go code
+- **Drag & Drop** - Easy image upload
+- **Auto-Update Mode** - Toggle automatic processing on slider change
+- **Download Results** - Save your paint-by-numbers as PNG
 
 ## Quick Start
 
@@ -29,7 +29,7 @@ cd /Users/erin/codebase/trdlz
 python3 -m http.server 8081
 ```
 
-Then open: http://localhost:8081/
+Then open: <http://localhost:8081/>
 
 ## How to Use
 
@@ -52,16 +52,19 @@ Then open: http://localhost:8081/
 ## Controls Explained
 
 ### Voronoi Points
+
 - **50-500**: Very stylized, abstract look
 - **500-2000**: Classic paint-by-numbers style (default: 2000)
 - **2000-10000**: High detail, closer to original
 
 ### Colors
+
 - **2-6**: Minimal palette, bold look
 - **8-16**: Balanced (default: 12)
 - **16-64**: Many shades, subtle transitions
 
 ### Line Width
+
 - **0**: No borders (pure color regions)
 - **1**: Thin lines (default)
 - **2-3**: Medium borders
@@ -76,7 +79,7 @@ GOOS=js GOARCH=wasm go build -o ../paintbynumbers.wasm .
 
 ## File Structure
 
-```
+```plaintext
 trdlz/
 ├── index.html              # Main UI
 ├── wasm_exec.js           # Go WASM runtime
@@ -107,6 +110,7 @@ trdlz/
 ## Browser Support
 
 Requires a modern browser with WebAssembly support:
+
 - ✅ Chrome 57+
 - ✅ Firefox 52+
 - ✅ Safari 11+
@@ -127,4 +131,4 @@ Requires a modern browser with WebAssembly support:
 - Line width 0 creates pure Voronoi art (no paint-by-numbers lines)
 - The app automatically downsamples images larger than 2048px
 
-Enjoy creating paint-by-numbers art! 🎨
+Enjoy creating paint-by-numbers art!
