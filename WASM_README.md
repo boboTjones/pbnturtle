@@ -1,6 +1,6 @@
 # Paint by Numbers - WebAssembly Edition
 
-A fully client-side paint-by-numbers generator that runs entirely in your browser using WebAssembly!
+A fully client-side paint-by-numbers generator that runs entirely in your browser using WebAssembly! Requires a modern browser with WebAssembly support.
 
 ## Features
 
@@ -108,13 +108,6 @@ trdlz/
   - K-means++ color clustering
 
 ## Browser Support
-
-Requires a modern browser with WebAssembly support:
-
-- ✅ Chrome 57+
-- ✅ Firefox 52+
-- ✅ Safari 11+
-- ✅ Edge 16+
 
 ## Advantages Over Server Version
 
