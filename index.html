@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paint by Numbers Turtle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .controls-panel {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .drop-zone {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            margin-bottom: 20px;
+        }
+
+        .drop-zone.dragover {
+            border-color: #764ba2;
+            background: #f0f0ff;
+        }
+
+        .drop-zone:hover {
+            border-color: #764ba2;
+        }
+
+        .drop-zone-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .slider-container {
+            position: relative;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-value {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .process-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .process-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .process-btn.has-changes {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .process-btn.has-changes:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+
+        .process-btn.processing {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.7;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .processing-hint {
+            font-size: 11px;
+            color: #888;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .preview-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .canvas-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #resultCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .palette-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .palette-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+        }
+
+        .color-item {
+            text-align: center;
+        }
+
+        .color-number {
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .color-swatch {
+            width: 100%;
+            height: 60px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-code {
+            font-family: monospace;
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .color-cmyk {
+            font-family: monospace;
+            font-size: 10px;
+            color: #888;
+            line-height: 1.3;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
+        #downloadHTMLBtn:hover {
+            background: #5a32a3 !important;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .status.processing {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+        }
+
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+            color: #721c24;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .auto-update {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .auto-update input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .auto-update label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: normal;
+        }
+
+        .preview-thumbnail {
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            background: white;
+            margin-bottom: 20px;
+            display: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .preview-thumbnail:hover {
+            border-color: #764ba2;
+        }
+
+        .preview-thumbnail img {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-thumbnail .filename {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #666;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .preview-thumbnail .change-image {
+            margin-top: 6px;
+            font-size: 11px;
+            color: #667eea;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Paint by Numbers Turtle</h1>
+            <p class="subtitle">Create beautiful paint-by-numbers from any image • Powered by WebAssembly</p>
+        </header>
+
+        <div class="main-content">
+            <div class="controls-panel">
+                <div class="drop-zone" id="dropZone">
+                    <div class="drop-zone-icon">📁</div>
+                    <p><strong>Drop an image here</strong></p>
+                    <p style="font-size: 0.9em; color: #666; margin-top: 8px;">or click to browse</p>
+                    <input type="file" id="fileInput" accept="image/*">
+                </div>
+
+                <div class="preview-thumbnail" id="previewThumbnail">
+                    <img id="thumbnailImg" src="" alt="Preview">
+                    <div class="filename" id="thumbnailFilename"></div>
+                    <div class="change-image">Click to change image</div>
+                </div>
+
+                <div class="control-group">
+                    <label>Mode:</label>
+                    <div style="display: flex; gap: 15px; background: white; padding: 12px; border-radius: 8px;">
+                        <label style="display: flex; align-items: center; gap: 6px; margin: 0; font-weight: normal; cursor: pointer;">
+                            <input type="radio" name="mode" value="voronoi" checked>
+                            Voronoi
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; margin: 0; font-weight: normal; cursor: pointer;">
+                            <input type="radio" name="mode" value="grid">
+                            Grid
+                        </label>
+                    </div>
+                </div>
+
+                <div class="auto-update">
+                    <div style="margin-bottom: 8px;">
+                        <input type="checkbox" id="autoUpdate">
+                        <label for="autoUpdate">Auto-update on slider change (1s delay)</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="showColors" checked>
+                        <label for="showColors">Show colors in tiles</label>
+                    </div>
+                </div>
+
+                <div class="control-group" id="pointsGroup">
+                    <label for="pointsSlider">Voronoi Points: <span class="slider-value"
+                            id="pointsValue">1000</span></label>
+                    <input type="range" id="pointsSlider" min="50" max="10000" step="50" value="1000">
+                    <div style="font-size: 11px; color: #888; margin-top: 4px;" id="pointsHint">
+                        Tip: Start low, increase for final render
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="colorsSlider">Colors: <span class="slider-value" id="colorsValue">12</span></label>
+                    <input type="range" id="colorsSlider" min="2" max="64" step="1" value="12">
+                </div>
+
+                <div class="control-group">
+                    <label for="lineWidthSlider">Line Width: <span class="slider-value"
+                            id="lineWidthValue">1</span></label>
+                    <input type="range" id="lineWidthSlider" min="0" max="5" step="1" value="1">
+                </div>
+
+                <div class="control-group">
+                    <label for="maxDimSlider">Max Image Size: <span class="slider-value"
+                            id="maxDimValue">1024</span>px</label>
+                    <input type="range" id="maxDimSlider" min="256" max="4096" step="128" value="1024">
+                    <div style="font-size: 11px; color: #888; margin-top: 4px;">
+                        Larger = better quality but slower
+                    </div>
+                </div>
+
+                <button class="process-btn" id="processBtn" disabled>Process Image</button>
+                <div class="processing-hint" id="processingHint"></div>
+            </div>
+
+            <div class="preview-panel">
+                <div class="canvas-container">
+                    <canvas id="resultCanvas"></canvas>
+                </div>
+
+                <div class="palette-container hidden" id="paletteContainer">
+                    <h3 class="palette-title">Color Palette</h3>
+                    <div class="color-grid" id="colorGrid"></div>
+                    <div style="text-align: center; margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <a href="#" class="download-btn hidden" id="downloadBtn">⬇ Download PNG</a>
+                        <a href="#" class="download-btn hidden" id="downloadHTMLBtn" style="background: #6f42c1;">⬇ Download HTML</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Web Worker with WASM
+        let worker = null;
+        let wasmReady = false;
+        let currentImageData = null;
+        let currentFileName = 'image';
+        let processing = false;
+
+        // Create worker
+        try {
+            worker = new Worker('worker.js');
+
+            worker.onmessage = function (e) {
+                if (e.data.type === 'ready') {
+                    wasmReady = true;
+                    console.log("✓ WASM Worker ready!");
+                } else if (e.data.type === 'complete') {
+                    displayResult(e.data.result);
+                    console.log("✓ Processing complete!");
+                    processBtn.disabled = false;
+                    processBtn.classList.remove('processing');
+                    processBtn.classList.remove('has-changes');
+                    processBtn.textContent = 'Process Image';
+                    processingHint.textContent = '';
+                    processing = false;
+                    hasUnprocessedChanges = false;
+                } else if (e.data.type === 'error') {
+                    console.error("Worker error:", e.data.error);
+                    alert("Error: " + e.data.error);
+                    processBtn.disabled = false;
+                    processBtn.classList.remove('processing');
+                    processBtn.textContent = 'Process Image';
+                    processingHint.textContent = '';
+                    processing = false;
+                }
+            };
+
+            worker.onerror = function (err) {
+                console.error("Worker error:", err);
+                alert("Worker failed. Please refresh the page.");
+            };
+        } catch (err) {
+            console.error("Failed to create worker:", err);
+            alert("Web Workers not supported in this browser");
+        }
+
+        // UI Elements
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const processBtn = document.getElementById('processBtn');
+        const resultCanvas = document.getElementById('resultCanvas');
+        const paletteContainer = document.getElementById('paletteContainer');
+        const colorGrid = document.getElementById('colorGrid');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadHTMLBtn = document.getElementById('downloadHTMLBtn');
+        const autoUpdate = document.getElementById('autoUpdate');
+        const showColors = document.getElementById('showColors');
+        const modeRadios = document.querySelectorAll('input[name="mode"]');
+
+        const pointsSlider = document.getElementById('pointsSlider');
+        const colorsSlider = document.getElementById('colorsSlider');
+        const lineWidthSlider = document.getElementById('lineWidthSlider');
+        const maxDimSlider = document.getElementById('maxDimSlider');
+
+        const pointsValue = document.getElementById('pointsValue');
+        const colorsValue = document.getElementById('colorsValue');
+        const lineWidthValue = document.getElementById('lineWidthValue');
+        const maxDimValue = document.getElementById('maxDimValue');
+
+        const previewThumbnail = document.getElementById('previewThumbnail');
+        const thumbnailImg = document.getElementById('thumbnailImg');
+        const thumbnailFilename = document.getElementById('thumbnailFilename');
+        const processingHint = document.getElementById('processingHint');
+
+        // Debounce timer
+        let debounceTimer = null;
+        let hasUnprocessedChanges = false;
+
+        // Set initial value display
+        pointsValue.textContent = pointsSlider.value;
+
+        // Drop zone events
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleImageFile(file);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleImageFile(file);
+            }
+        });
+
+        // Slider events
+        pointsSlider.addEventListener('input', (e) => {
+            pointsValue.textContent = e.target.value;
+            markHasChanges();
+            if (autoUpdate.checked && currentImageData) {
+                scheduleProcess();
+            }
+        });
+
+        colorsSlider.addEventListener('input', (e) => {
+            colorsValue.textContent = e.target.value;
+            markHasChanges();
+            if (autoUpdate.checked && currentImageData) {
+                scheduleProcess();
+            }
+        });
+
+        lineWidthSlider.addEventListener('input', (e) => {
+            lineWidthValue.textContent = e.target.value;
+            markHasChanges();
+            if (autoUpdate.checked && currentImageData) {
+                scheduleProcess();
+            }
+        });
+
+        maxDimSlider.addEventListener('input', (e) => {
+            maxDimValue.textContent = e.target.value;
+            markHasChanges();
+            if (autoUpdate.checked && currentImageData) {
+                scheduleProcess();
+            }
+        });
+
+        showColors.addEventListener('change', () => {
+            markHasChanges();
+            if (currentImageData) {
+                handleProcessImage();
+            }
+        });
+
+        modeRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                markHasChanges();
+                // Show/hide points slider based on mode
+                const pointsGroup = document.getElementById('pointsGroup');
+                const pointsHint = document.getElementById('pointsHint');
+                if (radio.value === 'grid') {
+                    pointsGroup.style.opacity = '0.5';
+                    pointsGroup.style.pointerEvents = 'none';
+                    pointsHint.textContent = 'Grid mode uses pixels directly';
+                } else {
+                    pointsGroup.style.opacity = '1';
+                    pointsGroup.style.pointerEvents = 'auto';
+                    pointsHint.textContent = 'Tip: Start low, increase for final render';
+                }
+                if (currentImageData) {
+                    handleProcessImage();
+                }
+            });
+        });
+
+        // Make thumbnail clickable to change image
+        previewThumbnail.addEventListener('click', () => fileInput.click());
+
+        processBtn.addEventListener('click', () => {
+            if (currentImageData) {
+                handleProcessImage();
+            }
+        });
+
+        downloadHTMLBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            downloadAsHTML();
+        });
+
+        function markHasChanges() {
+            if (!processing && currentImageData) {
+                hasUnprocessedChanges = true;
+                processBtn.classList.add('has-changes');
+            }
+        }
+
+        function scheduleProcess() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                handleProcessImage();
+            }, 1000); // 1 second debounce - wait for user to stop adjusting
+        }
+
+        function handleImageFile(file) {
+            // Store original filename
+            currentFileName = file.name;
+
+            // Read as ArrayBuffer for WASM
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentImageData = new Uint8Array(e.target.result);
+                processBtn.disabled = false;
+                markHasChanges();
+
+                if (autoUpdate.checked) {
+                    handleProcessImage();
+                }
+            };
+            reader.readAsArrayBuffer(file);
+
+            // Read as Data URL for thumbnail preview
+            const thumbnailReader = new FileReader();
+            thumbnailReader.onload = (e) => {
+                thumbnailImg.src = e.target.result;
+                thumbnailFilename.textContent = file.name;
+
+                // Hide drop zone, show thumbnail
+                dropZone.style.display = 'none';
+                previewThumbnail.style.display = 'block';
+            };
+            thumbnailReader.readAsDataURL(file);
+        }
+
+        function handleProcessImage() {
+            if (!wasmReady) {
+                console.log("WebAssembly not ready yet, please wait...");
+                alert("WASM is still loading. Please wait a moment and try again.");
+                return;
+            }
+
+            if (!currentImageData) {
+                console.error("No image loaded");
+                return;
+            }
+
+            if (processing) {
+                console.log("Already processing...");
+                return;
+            }
+
+            const points = parseInt(pointsSlider.value);
+            const colors = parseInt(colorsSlider.value);
+            const lineWidth = parseInt(lineWidthSlider.value);
+            const maxDimension = parseInt(maxDimSlider.value);
+            const colorsEnabled = showColors.checked;
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+
+            console.log(`Processing: mode=${mode}, ${points} points, ${colors} colors, line width ${lineWidth}, max dimension ${maxDimension}px, show colors: ${colorsEnabled}`);
+
+            processing = true;
+            processBtn.disabled = true;
+            processBtn.classList.remove('has-changes');
+            processBtn.classList.add('processing');
+            processBtn.textContent = 'Processing...';
+
+            // Estimate processing time
+            const estimatedSeconds = Math.ceil((points / 1000) * 2);
+            processingHint.textContent = `This may take ${estimatedSeconds}-${estimatedSeconds + 3} seconds...`;
+
+            // Send to worker
+            worker.postMessage({
+                type: 'process',
+                imageData: currentImageData,
+                points: points,
+                colors: colors,
+                lineWidth: lineWidth,
+                maxDimension: maxDimension,
+                showColors: colorsEnabled,
+                mode: mode
+            });
+        }
+
+        function getDownloadFilename(originalFilename) {
+            // Remove extension and add "_pbn.png"
+            const lastDotIndex = originalFilename.lastIndexOf('.');
+            if (lastDotIndex === -1) {
+                // No extension found
+                return originalFilename + '_pbn.png';
+            }
+            const nameWithoutExt = originalFilename.substring(0, lastDotIndex);
+            return nameWithoutExt + '_pbn.png';
+        }
+
+        function canvasToHTMLTable() {
+            const canvas = resultCanvas;
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imageData.data;
+            const width = canvas.width;
+            const height = canvas.height;
+
+            // Build color map for CSS classes (more compact than inline styles)
+            const colorMap = new Map();
+            let colorIndex = 0;
+
+            // First pass: collect unique colors
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    const r = pixels[idx];
+                    const g = pixels[idx + 1];
+                    const b = pixels[idx + 2];
+                    const key = `${r},${g},${b}`;
+
+                    if (!colorMap.has(key)) {
+                        colorMap.set(key, `c${colorIndex}`);
+                        colorIndex++;
+                    }
+                }
+            }
+
+            // Generate CSS
+            let css = '<style>\n';
+            css += 'table{border-collapse:collapse;border:0}\n';
+            css += 'td{width:1px;height:1px;padding:0;border:0}\n';
+            for (const [rgb, className] of colorMap) {
+                css += `.${className}{background-color:rgb(${rgb})}\n`;
+            }
+            css += '</style>\n';
+
+            // Generate HTML table
+            let html = '<table>\n<tbody>\n';
+            for (let y = 0; y < height; y++) {
+                html += '<tr>';
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    const r = pixels[idx];
+                    const g = pixels[idx + 1];
+                    const b = pixels[idx + 2];
+                    const key = `${r},${g},${b}`;
+                    const className = colorMap.get(key);
+                    html += `<td class='${className}'></td>`;
+                }
+                html += '</tr>\n';
+            }
+            html += '</tbody>\n</table>\n';
+
+            return css + html;
+        }
+
+        function downloadAsHTML() {
+            if (!resultCanvas.width || !resultCanvas.height) {
+                alert('No image to download');
+                return;
+            }
+
+            const htmlContent = canvasToHTMLTable();
+            const fullHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paint by Numbers - ${currentFileName}</title>
+</head>
+<body>
+${htmlContent}
+</body>
+</html>`;
+
+            // Create download link
+            const blob = new Blob([fullHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+
+            const lastDotIndex = currentFileName.lastIndexOf('.');
+            const nameWithoutExt = lastDotIndex === -1 ? currentFileName : currentFileName.substring(0, lastDotIndex);
+            const filename = nameWithoutExt + '_pbn.html';
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+
+            URL.revokeObjectURL(url);
+        }
+
+        function displayResult(result) {
+            // Display image on canvas
+            const img = new Image();
+            img.onload = () => {
+                resultCanvas.width = img.width;
+                resultCanvas.height = img.height;
+                const ctx = resultCanvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+
+                // Setup download with original filename + "_pbn"
+                const downloadFilename = getDownloadFilename(currentFileName);
+                downloadBtn.href = resultCanvas.toDataURL('image/png');
+                downloadBtn.download = downloadFilename;
+                downloadBtn.classList.remove('hidden');
+                downloadHTMLBtn.classList.remove('hidden');
+            };
+            img.src = 'data:image/png;base64,' + result.image;
+
+            // Display palette
+            colorGrid.innerHTML = '';
+            result.palette.forEach(colorInfo => {
+                const colorItem = document.createElement('div');
+                colorItem.className = 'color-item';
+                colorItem.innerHTML = `
+                    <div class="color-number">#${colorInfo.number}</div>
+                    <div class="color-swatch" style="background-color: ${colorInfo.hex};"></div>
+                    <div class="color-code">${colorInfo.hex}</div>
+                    <div class="color-cmyk">C:${colorInfo.c} M:${colorInfo.m}<br>Y:${colorInfo.y} K:${colorInfo.k}</div>
+                `;
+                colorGrid.appendChild(colorItem);
+            });
+
+            paletteContainer.classList.remove('hidden');
+        }
+    </script>
+</body>
+
+</html>

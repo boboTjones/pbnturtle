@@ -1,0 +1,22 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Sample files
+sample.png
+
+# Build artifacts
+*.wasm
+wasm/*.wasm
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
